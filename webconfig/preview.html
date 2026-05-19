@@ -372,6 +372,21 @@
     }
     .res-btn:hover { border-color: #a3a3a3; }
     .res-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+    /* Color mode selector */
+    .color-btn {
+      padding: 4px 8px;
+      font-size: 0.68rem;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: #fff;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+    }
+    .color-btn:hover { border-color: #a3a3a3; }
+    .color-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
   </style>
 </head>
 <body>
@@ -541,12 +556,12 @@
             <div class="form-group">
               <label class="form-label">Battery Voltage</label>
               <div class="range-row">
-                <input type="range" id="voltageSlider" min="2.80" max="3.50" step="0.01" value="3.30">
-                <span class="range-value" id="voltageValue">3.30V</span>
+                <input type="range" id="voltageSlider" min="2.80" max="4.20" step="0.01" value="3.70">
+                <span class="range-value" id="voltageValue">3.70V</span>
               </div>
               <div class="range-labels">
                 <span>2.80V (Dead)</span>
-                <span>3.50V (Full)</span>
+                <span>4.20V (Full)</span>
               </div>
             </div>
 
@@ -557,6 +572,16 @@
                 <button class="res-btn active" data-w="400" data-h="300" onclick="selectResolution(this)">4.2" 400×300</button>
                 <button class="res-btn" data-w="296" data-h="128" onclick="selectResolution(this)">2.9" 296×128</button>
                 <button class="res-btn" data-w="648" data-h="480" onclick="selectResolution(this)">5.83" 648×480</button>
+              </div>
+            </div>
+
+            <!-- Colors -->
+            <div class="form-group">
+              <label class="form-label">Color Mode</label>
+              <div class="res-grid">
+                <button class="color-btn active" data-colors="2" onclick="selectColors(this)">2色 (BW)</button>
+                <button class="color-btn" data-colors="3" onclick="selectColors(this)">3色 (BWR)</button>
+                <button class="color-btn" data-colors="4" onclick="selectColors(this)">4色 (BWRY)</button>
               </div>
             </div>
 
@@ -594,6 +619,7 @@
     let allModesRunning = false;
     let renderHistory = [];
     let currentResolution = { w: 400, h: 300, label: '4.2"' };
+    let currentColors = 2;
     const CORE_PERSONA_MODES = ['DAILY','WEATHER','ZEN','BRIEFING','STOIC','POETRY','ARTWALL','ALMANAC','RECIPE','COUNTDOWN'];
     const TOOL_PERSONA_MODES = ['MEMO','HABIT'];
     const EXTRA_PERSONA_MODES = ['ROAST','FITNESS','RIDDLE','CHALLENGE','STORY','LIFEBAR','THISDAY','LETTER','QUESTION','BIAS'];
@@ -625,7 +651,21 @@
       currentResolution = { w, h, label: btn.textContent.trim() };
       previewImg.style.width = w + 'px';
       previewImg.style.height = h + 'px';
-      document.getElementById('screenLabel').textContent = `${w} × ${h} · 1-bit monochrome`;
+      updateScreenLabel();
+    }
+
+    // ── Colors selector ────────────────────────────────────────
+    function selectColors(btn) {
+      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentColors = parseInt(btn.dataset.colors);
+      updateScreenLabel();
+    }
+
+    function updateScreenLabel() {
+      const colorLabel = currentColors === 2 ? '1-bit monochrome' : 
+                         currentColors === 3 ? '3-color (BWR)' : '4-color (BWRY)';
+      document.getElementById('screenLabel').textContent = `${currentResolution.w} × ${currentResolution.h} · ${colorLabel}`;
     }
 
     // ── Persona selection ───────────────────────────────────────
@@ -664,7 +704,7 @@
 
       const v = parseFloat(voltageSlider.value).toFixed(2);
       const persona = selectedPersona === 'AUTO' ? '' : selectedPersona;
-      let url = `/api/preview?v=${v}&w=${currentResolution.w}&h=${currentResolution.h}`;
+      let url = `/api/preview?v=${v}&w=${currentResolution.w}&h=${currentResolution.h}&colors=${currentColors}`;
       if (persona) url += `&persona=${persona}`;
 
       document.getElementById('infoUrl').textContent = url;

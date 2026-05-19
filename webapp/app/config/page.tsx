@@ -2303,7 +2303,7 @@ function ConfigPageInner() {
   const activeModeSchema = settingsMode ? (modeSchemaMap[settingsMode] || []) : [];
 
   const batteryPct = stats?.last_battery_voltage
-    ? Math.min(100, Math.max(0, Math.round((stats.last_battery_voltage / 3.3) * 100)))
+    ? Math.min(100, Math.max(0, Math.round(((stats.last_battery_voltage - 3.0) / (4.15 - 3.0)) * 100)))
     : null;
   const currentDeviceMembership = userDevices.find((d) => d.mac.toUpperCase() === mac.toUpperCase()) || null;
   const denyByMembership = Boolean(mac && currentUser && !devicesLoading && !currentDeviceMembership);
